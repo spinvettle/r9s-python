@@ -38,10 +38,10 @@ def chat_with_system_prompt():
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": "What is the capital of France?"}
+                {"role": "user", "content": "What is  France?"}
             ],
             temperature=0.7,
-            max_tokens=100
+            max_tokens=500
         )
         print(f"Assistant: {res.choices[0].message.content}")
 
@@ -54,7 +54,7 @@ def streaming_chat():
 
     with R9S(api_key=os.getenv("R9S_API_KEY", "")) as r9_s:
         res = r9_s.chat.create(
-            model="gpt-4o-mini",
+            model="minimax-m2",
             messages=[
                 {"role": "user", "content": "Tell me a short story about a cat"}
             ],
