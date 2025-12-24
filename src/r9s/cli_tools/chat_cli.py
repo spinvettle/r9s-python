@@ -23,6 +23,7 @@ from r9s.cli_tools.chat_extensions import (
 )
 from r9s.cli_tools.i18n import resolve_lang, t
 from r9s.cli_tools.terminal import FG_CYAN, error, header, info, prompt_text
+from r9s.cli_tools.ui.spinner import Spinner
 from r9s.sdk import R9S
 
 
@@ -198,18 +199,29 @@ def _stream_chat(
     messages: List[models.MessageTypedDict],
     ctx: ChatContext,
     exts: List[Any],
+    *,
+    prefix: Optional[str] = None,
 ) -> str:
+    spinner = Spinner(prefix or "")
+    if prefix and sys.stdout.isatty():
+        spinner.start()
+
     stream = r9s.chat.create(model=model, messages=messages, stream=True)
     assistant_parts: List[str] = []
-    print("", end="", flush=True)
     for event in stream:
         if not event.choices:
             continue
         delta = event.choices[0].delta
         if delta.content:
+            spinner.stop_and_clear()
             piece = run_stream_delta_extensions(exts, delta.content, ctx)
             assistant_parts.append(piece)
+            if prefix and not spinner.prefix_printed:
+                spinner.print_prefix()
             print(piece, end="", flush=True)
+    spinner.stop_and_clear()
+    if prefix and not spinner.prefix_printed:
+        spinner.print_prefix()
     print()
     assistant_text = "".join(assistant_parts)
     return run_after_response_extensions(exts, assistant_text, ctx)
@@ -221,12 +233,16 @@ def _non_stream_chat(
     messages: List[models.MessageTypedDict],
     ctx: ChatContext,
     exts: List[Any],
+    *,
+    prefix: Optional[str] = None,
 ) -> str:
     res = r9s.chat.create(model=model, messages=messages, stream=False)
     text = ""
     if res.choices and res.choices[0].message:
         text = _content_to_text(res.choices[0].message.content)
     text = run_after_response_extensions(exts, text, ctx)
+    if prefix:
+        print(prefix, end="", flush=True)
     print(text)
     return text
 
@@ -403,11 +419,10 @@ def handle_chat(args: argparse.Namespace) -> None:
             messages = _build_messages(system_prompt, ctx.history)
             messages = run_before_request_extensions(exts, messages, ctx)
 
-            print(_style_prompt(t("chat.prompt.assistant", lang)), end="", flush=True)
             assistant_text = (
-                _non_stream_chat(r9s, model, messages, ctx, exts)
+                _non_stream_chat(r9s, model, messages, ctx, exts, prefix=_style_prompt(t("chat.prompt.assistant", lang)))
                 if args.no_stream
-                else _stream_chat(r9s, model, messages, ctx, exts)
+                else _stream_chat(r9s, model, messages, ctx, exts, prefix=_style_prompt(t("chat.prompt.assistant", lang)))
             )
             ctx.history.append({"role": "assistant", "content": assistant_text})
 

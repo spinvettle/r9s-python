@@ -42,10 +42,10 @@ asyncio.run(main())
 
 ```bash
 # 1) Pipe stdin (single-turn)
-echo "你好" | r9s chat --model "$R9S_MODEL"
+echo "hello" | r9s chat --model "$R9S_MODEL"
 
 # 2) Interactive multi-turn
-r9s chat --model "$R9S_MODEL" --system-prompt "你是一个严谨的助手"
+r9s chat --model "$R9S_MODEL" --system-prompt "You are a translator"
 
 # 3) History (default: saved under ~/.r9s/chat/)
 r9s chat --model "$R9S_MODEL"
