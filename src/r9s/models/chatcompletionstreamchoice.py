@@ -30,7 +30,7 @@ class ChatCompletionStreamChoiceLogprobs(BaseModel):
 class ChatCompletionStreamChoiceTypedDict(TypedDict):
     index: int
     delta: ChatCompletionStreamDeltaTypedDict
-    finish_reason: Nullable[ChatCompletionStreamChoiceFinishReason]
+    finish_reason: NotRequired[Nullable[ChatCompletionStreamChoiceFinishReason]]
     logprobs: NotRequired[ChatCompletionStreamChoiceLogprobsTypedDict]
 
 
@@ -39,7 +39,7 @@ class ChatCompletionStreamChoice(BaseModel):
 
     delta: ChatCompletionStreamDelta
 
-    finish_reason: Nullable[ChatCompletionStreamChoiceFinishReason]
+    finish_reason: Nullable[ChatCompletionStreamChoiceFinishReason] = None
 
     logprobs: Optional[ChatCompletionStreamChoiceLogprobs] = None
 
